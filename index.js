@@ -533,6 +533,24 @@ app.post('/vendorRegisterServices', (req, res) => {
       });
   }
 });
+app.get('/vendorRegisterEvaluate/:id', (req, res) => {
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "SELECT * FROM db_vendor_register_evaluate WHERE id_vendor_register = "+id+"";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
 app.post('/vendorRegisterEvaluate', (req, res) => {
   const { id_vendor_register,information_provider,information_position,date,score_1_1,seller_1_1,contractor_1_1,score_1_2,seller_1_2,contractor_1_2,score_1_3,seller_1_3,contractor_1_3,score_2_1,seller_2_1,contractor_2_1,score_2_2,seller_2_2,contractor_2_2,score_2_3,seller_2_3,contractor_2_3,score_3_1,seller_3_1,contractor_3_1,score_3_2,seller_3_2,contractor_3_2,score_3_3,seller_3_3,contractor_3_3,score_4_1,seller_4_1,contractor_4_1,score_4_2,seller_4_2,contractor_4_2,score_4_3,seller_4_3,contractor_4_3,score_5_1,seller_5_1,contractor_5_1,score_5_2,seller_5_2,contractor_5_2,score_6_1,score_6_2,score_6_3,score_7_1,score_7_2,score_7_3,score_8_1,score_8_2,score_8_3,assessor,date_evaluate,assessment_summary,comment1,comment1_date,comment2,comment2_date,comment3,comment3_date } = req.body;
   const values = [ id_vendor_register,information_provider,information_position,date,score_1_1,seller_1_1,contractor_1_1,score_1_2,seller_1_2,contractor_1_2,score_1_3,seller_1_3,contractor_1_3,score_2_1,seller_2_1,contractor_2_1,score_2_2,seller_2_2,contractor_2_2,score_2_3,seller_2_3,contractor_2_3,score_3_1,seller_3_1,contractor_3_1,score_3_2,seller_3_2,contractor_3_2,score_3_3,seller_3_3,contractor_3_3,score_4_1,seller_4_1,contractor_4_1,score_4_2,seller_4_2,contractor_4_2,score_4_3,seller_4_3,contractor_4_3,score_5_1,seller_5_1,contractor_5_1,score_5_2,seller_5_2,contractor_5_2,score_6_1,score_6_2,score_6_3,score_7_1,score_7_2,score_7_3,score_8_1,score_8_2,score_8_3,assessor,date_evaluate,assessment_summary,comment1,comment1_date,comment2,comment2_date,comment3,comment3_date ];
@@ -687,7 +705,8 @@ app.post('/vendorRegisterProducts', (req, res) => {
   }
 });
 
-// vendor form get service
+
+// ****************************************************************************************************************** vendor form get service
 app.get('/vendorServiceCat', (req, res) =>{
   sql.connect(config, err => {
     if (err) {
@@ -741,8 +760,111 @@ app.get('/vendorServiceLists/:id', (req, res) =>{
     });
   });
 });
+// ****************************************************************************************************************** End vendor form get service
 
-// SignIn
+
+
+// ****************************************************************************************************************** vendor form get goods
+app.get('/vendorGoods', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = "SELECT business_section FROM dbo.db_structure_avl GROUP BY business_section";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.post('/vendorGoodsPackage', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const business_section = req.body.business_section;
+    const query = "SELECT package FROM dbo.db_structure_avl WHERE business_section = '"+ business_section +"' GROUP BY package";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.post('/vendorGoodsGroup', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const business_section = req.body.business_section;
+    const package = req.body.package;
+    const query = "SELECT equipment_group FROM dbo.db_structure_avl WHERE business_section = '"+ business_section +"' AND package = '"+ package +"' GROUP BY equipment_group";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.post('/vendorGoodsList', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const business_section = req.body.business_section;
+    const package = req.body.package;
+    const equipment_group = req.body.equipment_group;
+    const query = "SELECT equipment_list FROM dbo.db_structure_avl WHERE package = '"+ package +"' AND business_section = '"+ business_section +"' AND equipment_group = '"+ equipment_group +"' GROUP BY equipment_list";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.post('/vendorGoodsBrand', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const business_section = req.body.business_section;
+    const package = req.body.package;
+    const equipment_group = req.body.equipment_group;
+    const equipment_list = req.body.equipment_list;
+    const query = "SELECT * FROM dbo.db_structure_avl WHERE package = '"+ package +"' AND business_section = '"+ business_section +"' AND equipment_group = '"+ equipment_group +"' AND equipment_list = '"+ equipment_list +"'";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+// ****************************************************************************************************************** End vendor form get goods
+
+
+
+// ****************************************************************************************************************** vendor login
 // app.post('/vendorSignin', (req, res) => {
 //   sql.connect(config, err => {
 //     if (err) {
@@ -797,6 +919,7 @@ app.post('/vendorSignin', async (req, res) => {
     return res.status(500).send('เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
   }
 });
+// ****************************************************************************************************************** End vendor login
 
 
 // backend generate 
@@ -870,7 +993,7 @@ app.get('/selectUserFormRegister/:id', (req, res) =>{
 
 
 
-// upload file
+// ****************************************************************************************************************** upload files
 app.get('/images/:filename', (req, res) => {
   const filename = req.params.filename;
   const imagePath = path.join(__dirname, 'uploads', filename);
@@ -880,9 +1003,11 @@ app.get('/images/:filename', (req, res) => {
 app.post('/saveImage', (req, res) => {
   const base64Image = req.body.image;
   const fileType = req.body.fileType;
-  
+  // console.log(fileType);
   // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  // const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  // const base64Data = base64Image.replace(/^data:(image\/\w+|application\/\w+);base64,/, '');
+  const base64Data = base64Image.replace(/^data:(image\/\w+|application\/vnd\.openxmlformats-officedocument\.(wordprocessingml\.(document|template)|spreadsheetml\.(sheet|template)|presentationml\.(presentation|template|slideshow|slide))|application\/pdf);base64,/, '');
   
   // Generate a unique filename with appropriate extension
   const fileExtension = getFileExtension(fileType);
@@ -910,7 +1035,7 @@ app.post('/saveImage', (req, res) => {
 function generateUniqueFileName(extension) {
   const timestamp = Date.now();
   const randomNum = Math.floor(Math.random() * 1000);
-  return `image_${timestamp}_${randomNum}`;
+  return `file_${timestamp}_${randomNum}`;
 }
 
 // Get the file extension based on the fileType
@@ -922,13 +1047,30 @@ function getFileExtension(fileType) {
       return 'png';
     case 'application/pdf':
       return 'pdf';
-    // Add more cases for other supported file types
+    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      return 'docx';
+    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.template':
+      return 'dotx';
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      return 'xlsx';
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.template':
+      return 'xltx';
+    case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+      return 'pptx';
+    case 'application/vnd.openxmlformats-officedocument.presentationml.template':
+      return 'potx';
+    case 'application/vnd.openxmlformats-officedocument.presentationml.slideshow':
+      return 'ppsx';
+    case 'application/vnd.openxmlformats-officedocument.presentationml.slide':
+      return 'sldx';
     default:
-      return 'jpg'; // Default to JPEG extension if file type is unknown
+      return fileType.split('/')[1];
   }
 }
+// ****************************************************************************************************************** End upload files
 
-// send mail
+
+// ****************************************************************************************************************** send email
 app.post('/sendEmail', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -955,7 +1097,7 @@ app.post('/sendEmail', (req, res) => {
     }
   });
 });
-
+// ****************************************************************************************************************** End send email
 
 
 // Vendor Evaluation
@@ -965,7 +1107,43 @@ app.get('/vendorEvaluation', (req, res) =>{
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const query = "SELECT a.*,b.genaralCompanyName as genaralCompanyName FROM db_vendor_evaluation a LEFT JOIN db_vendor_register b ON a.company_id = b.id";
+    const query = "SELECT a.*,b.genaralCompanyName as genaralCompanyName FROM db_vendor_evaluation a LEFT JOIN db_vendor_register b ON a.company_id = b.id ORDER BY a.id DESC";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.get('/vendorEvaluation/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "SELECT * FROM db_vendor_evaluation WHERE id = '"+id+"'";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
+app.delete('/vendorEvaluation/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "DELETE FROM db_vendor_evaluation WHERE id = '" + id + "'";
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -977,8 +1155,8 @@ app.get('/vendorEvaluation', (req, res) =>{
   });
 });
 app.post('/vendorEvaluation', (req, res) => {
-  const { company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date } = req.body;
-  const values = [ company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date ];
+  const { company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,score_2_7,score_2_8,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date,assessor } = req.body;
+  const values = [ company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,score_2_7,score_2_8,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date,assessor ];
 
   let  pool =  sql.connect(config, err => {
     if (err) {
@@ -989,6 +1167,91 @@ app.post('/vendorEvaluation', (req, res) => {
   try {
     let message = "";
     pool.request()
+    .input('company_id', sql.Int, company_id)
+    .input('vendor_code', sql.NVarChar(20), vendor_code)
+    .input('group_score', sql.Int, group_score)
+    .input('group_users', sql.Int, group_users)
+    .input('group_users_other', sql.NVarChar(100), group_users_other)
+    .input('purchase_of_year', sql.NVarChar(20), purchase_of_year)
+    .input('purchase_order_of_year', sql.NVarChar(20), purchase_order_of_year)
+    .input('question2_1', sql.Int, question2_1)
+    .input('question2_1_desc', sql.NVarChar(50), question2_1_desc)
+    .input('score_2_1', sql.Int, score_2_1)
+    .input('desc_2_1', sql.NVarChar(50), desc_2_1)
+    .input('question2_2', sql.Int, question2_2)
+    .input('question2_2_desc', sql.NVarChar(50), question2_2_desc)
+    .input('score_2_2', sql.Int, score_2_2)
+    .input('desc_2_2', sql.NVarChar(50), desc_2_2)
+    .input('score_2_3', sql.Int, score_2_3)
+    .input('desc_2_3', sql.NVarChar(50), desc_2_3)
+    .input('score_2_4', sql.Int, score_2_4)
+    .input('desc_2_4', sql.NVarChar(50), desc_2_4)
+    .input('score_2_5', sql.Int, score_2_5)
+    .input('desc_2_5', sql.NVarChar(50), desc_2_5)
+    .input('score_2_6', sql.Int, score_2_6)
+    .input('desc_2_6', sql.NVarChar(50), desc_2_6)
+    .input('score_2_7', sql.Int, score_2_7)
+    .input('score_2_8', sql.Int, score_2_8)
+    .input('total_score_2', sql.Float, total_score_2)
+    .input('po_number', sql.NVarChar(20), po_number)
+    .input('score_3_1', sql.Int, score_3_1)
+    .input('score_3_2', sql.Int, score_3_2)
+    .input('score_3_3', sql.Int, score_3_3)
+    .input('comment', sql.NVarChar(255), comment)
+    .input('return_order', sql.Int, return_order)
+    .input('user_name', sql.NVarChar(20), user_name)
+    .input('user_name_date', sql.DateTime, user_name_date)
+    .input('purchasing_officer', sql.NVarChar(20), purchasing_officer)
+    .input('purchasing_officer_date', sql.DateTime, purchasing_officer_date)
+    .input('agree_to_proceed', sql.NVarChar(20), agree_to_proceed)
+    .input('agree_to_proceed_date', sql.DateTime, agree_to_proceed_date)
+    .input('assessor', sql.Int, assessor)
+    .output('message', sql.NVarChar(50))
+    .execute('AddVendorEvaluation', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.put('/vendorEvaluation/:id', (req, res) => {
+  const { company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date,assessor } = req.body;
+  const values = [ company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date,assessor ];
+
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  const id = req.params.id;
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
     .input('company_id', sql.Int, company_id)
     .input('vendor_code', sql.NVarChar(20), vendor_code)
     .input('group_score', sql.Int, group_score)
@@ -1025,8 +1288,9 @@ app.post('/vendorEvaluation', (req, res) => {
     .input('purchasing_officer_date', sql.DateTime, purchasing_officer_date)
     .input('agree_to_proceed', sql.NVarChar(20), agree_to_proceed)
     .input('agree_to_proceed_date', sql.DateTime, agree_to_proceed_date)
+    .input('assessor', sql.Int, assessor)
     .output('message', sql.NVarChar(50))
-    .execute('AddVendorEvaluation', function(err, returnValue) {
+    .execute('UpdateVendorEvaluation', function(err, returnValue) {
       if (err){
         const errorResult = {
           code: 'E0001',
@@ -1059,6 +1323,791 @@ app.post('/vendorEvaluation', (req, res) => {
 // End Vendor Evaluation
 
 
+// Vendor Satisfy
+app.get('/vendorSatisfy', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = "SELECT * FROM db_vendor_satisfy WHERE del = 0 ORDER BY id DESC";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.get('/vendorSatisfy/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "SELECT * FROM db_vendor_satisfy WHERE id = '" + id + "'";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
+app.delete('/vendorSatisfy/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "UPDATE db_vendor_satisfy SET del = 1 WHERE id = '" + id + "'";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.json({ message: 'Update successful' });
+    });
+  });
+});
+app.post('/vendorSatisfy', (req, res) => {
+  const { po_number,vendor_code,company_name,project_name,user_name,date_assessment_form,year,importance_1_1,satisfaction_1_1,importance_1_2,satisfaction_1_2,importance_1_3,satisfaction_1_3,importance_2_1,satisfaction_2_1,importance_2_2,satisfaction_2_2,importance_3_1,satisfaction_3_1,importance_3_2,satisfaction_3_2,importance_3_3,satisfaction_3_3,importance_4_1,satisfaction_4_1,importance_4_2,satisfaction_4_2,importance_5_1,satisfaction_5_1,importance_5_2,satisfaction_5_2,importance_5_3,satisfaction_5_3,importance_6_1,satisfaction_6_1,importance_6_2,satisfaction_6_2,sum_total,criterion_result } = req.body;
+  const values = [ po_number,vendor_code,company_name,project_name,user_name,date_assessment_form,year,importance_1_1,satisfaction_1_1,importance_1_2,satisfaction_1_2,importance_1_3,satisfaction_1_3,importance_2_1,satisfaction_2_1,importance_2_2,satisfaction_2_2,importance_3_1,satisfaction_3_1,importance_3_2,satisfaction_3_2,importance_3_3,satisfaction_3_3,importance_4_1,satisfaction_4_1,importance_4_2,satisfaction_4_2,importance_5_1,satisfaction_5_1,importance_5_2,satisfaction_5_2,importance_5_3,satisfaction_5_3,importance_6_1,satisfaction_6_1,importance_6_2,satisfaction_6_2,sum_total,criterion_result ];
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('po_number', sql.VARCHAR(20), po_number)
+    .input('vendor_code', sql.VARCHAR(20), vendor_code)
+    .input('company_name', sql.VARCHAR(50), company_name)
+    .input('project_name', sql.VARCHAR(100), project_name)
+    .input('user_name', sql.VARCHAR(20), user_name)
+    .input('date_assessment_form', sql.DateTime, date_assessment_form)
+    .input('year', sql.VARCHAR(4), currentYear.toString())
+    .input('importance_1_1', sql.VARCHAR(10), importance_1_1)
+    .input('satisfaction_1_1', sql.VARCHAR(10), satisfaction_1_1)
+    .input('importance_1_2', sql.VARCHAR(10), importance_1_2)
+    .input('satisfaction_1_2', sql.VARCHAR(10), satisfaction_1_2)
+    .input('importance_1_3', sql.VARCHAR(10), importance_1_3)
+    .input('satisfaction_1_3', sql.VARCHAR(10), satisfaction_1_3)
+    .input('importance_2_1', sql.VARCHAR(10), importance_2_1)
+    .input('satisfaction_2_1', sql.VARCHAR(10), satisfaction_2_1)
+    .input('importance_2_2', sql.VARCHAR(10), importance_2_2)
+    .input('satisfaction_2_2', sql.VARCHAR(10), satisfaction_2_2)
+    .input('importance_3_1', sql.VARCHAR(10), importance_3_1)
+    .input('satisfaction_3_1', sql.VARCHAR(10), satisfaction_3_1)
+    .input('importance_3_2', sql.VARCHAR(10), importance_3_2)
+    .input('satisfaction_3_2', sql.VARCHAR(10), satisfaction_3_2)
+    .input('importance_3_3', sql.VARCHAR(10), importance_3_3)
+    .input('satisfaction_3_3', sql.VARCHAR(10), satisfaction_3_3)
+    .input('importance_4_1', sql.VARCHAR(10), importance_4_1)
+    .input('satisfaction_4_1', sql.VARCHAR(10), satisfaction_4_1)
+    .input('importance_4_2', sql.VARCHAR(10), importance_4_2)
+    .input('satisfaction_4_2', sql.VARCHAR(10), satisfaction_4_2)
+    .input('importance_5_1', sql.VARCHAR(10), importance_5_1)
+    .input('satisfaction_5_1', sql.VARCHAR(10), satisfaction_5_1)
+    .input('importance_5_2', sql.VARCHAR(10), importance_5_2)
+    .input('satisfaction_5_2', sql.VARCHAR(10), satisfaction_5_2)
+    .input('importance_5_3', sql.VARCHAR(10), importance_5_3)
+    .input('satisfaction_5_3', sql.VARCHAR(10), satisfaction_5_3)
+    .input('importance_6_1', sql.VARCHAR(10), importance_6_1)
+    .input('satisfaction_6_1', sql.VARCHAR(10), satisfaction_6_1)
+    .input('importance_6_2', sql.VARCHAR(10), importance_6_2)
+    .input('satisfaction_6_2', sql.VARCHAR(10), satisfaction_6_2)
+    .input('sum_total', sql.VARCHAR(20), sum_total)
+    .input('criterion_result', sql.VARCHAR(10), criterion_result)
+    .output('message', sql.NVarChar(50))
+    .execute('AddVendorSatisfy', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+      // if (err) {
+      //   console.error('Error executing the stored procedure:', err);
+      //   return;
+      // }
+  
+      // const message = returnValue.output.message;
+      // console.log('Stored procedure executed successfully');
+      // console.log('Message:', message);
+  
+      // // Close the database connection
+      // pool.close();
+
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.put('/vendorSatisfy/:id', (req, res) => {
+  const { po_number,vendor_code,company_name,project_name,user_name,date_assessment_form,year,importance_1_1,satisfaction_1_1,importance_1_2,satisfaction_1_2,importance_1_3,satisfaction_1_3,importance_2_1,satisfaction_2_1,importance_2_2,satisfaction_2_2,importance_3_1,satisfaction_3_1,importance_3_2,satisfaction_3_2,importance_3_3,satisfaction_3_3,importance_4_1,satisfaction_4_1,importance_4_2,satisfaction_4_2,importance_5_1,satisfaction_5_1,importance_5_2,satisfaction_5_2,importance_5_3,satisfaction_5_3,importance_6_1,satisfaction_6_1,importance_6_2,satisfaction_6_2,sum_total,criterion_result } = req.body;
+  const values = [ po_number,vendor_code,company_name,project_name,user_name,date_assessment_form,year,importance_1_1,satisfaction_1_1,importance_1_2,satisfaction_1_2,importance_1_3,satisfaction_1_3,importance_2_1,satisfaction_2_1,importance_2_2,satisfaction_2_2,importance_3_1,satisfaction_3_1,importance_3_2,satisfaction_3_2,importance_3_3,satisfaction_3_3,importance_4_1,satisfaction_4_1,importance_4_2,satisfaction_4_2,importance_5_1,satisfaction_5_1,importance_5_2,satisfaction_5_2,importance_5_3,satisfaction_5_3,importance_6_1,satisfaction_6_1,importance_6_2,satisfaction_6_2,sum_total,criterion_result ];
+  const id = req.params.id;
+  
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('po_number', sql.VARCHAR(20), po_number)
+    .input('vendor_code', sql.VARCHAR(20), vendor_code)
+    .input('company_name', sql.VARCHAR(50), company_name)
+    .input('project_name', sql.VARCHAR(100), project_name)
+    .input('user_name', sql.VARCHAR(20), user_name)
+    .input('date_assessment_form', sql.DateTime, date_assessment_form)
+    .input('importance_1_1', sql.VARCHAR(10), importance_1_1)
+    .input('satisfaction_1_1', sql.VARCHAR(10), satisfaction_1_1)
+    .input('importance_1_2', sql.VARCHAR(10), importance_1_2)
+    .input('satisfaction_1_2', sql.VARCHAR(10), satisfaction_1_2)
+    .input('importance_1_3', sql.VARCHAR(10), importance_1_3)
+    .input('satisfaction_1_3', sql.VARCHAR(10), satisfaction_1_3)
+    .input('importance_2_1', sql.VARCHAR(10), importance_2_1)
+    .input('satisfaction_2_1', sql.VARCHAR(10), satisfaction_2_1)
+    .input('importance_2_2', sql.VARCHAR(10), importance_2_2)
+    .input('satisfaction_2_2', sql.VARCHAR(10), satisfaction_2_2)
+    .input('importance_3_1', sql.VARCHAR(10), importance_3_1)
+    .input('satisfaction_3_1', sql.VARCHAR(10), satisfaction_3_1)
+    .input('importance_3_2', sql.VARCHAR(10), importance_3_2)
+    .input('satisfaction_3_2', sql.VARCHAR(10), satisfaction_3_2)
+    .input('importance_3_3', sql.VARCHAR(10), importance_3_3)
+    .input('satisfaction_3_3', sql.VARCHAR(10), satisfaction_3_3)
+    .input('importance_4_1', sql.VARCHAR(10), importance_4_1)
+    .input('satisfaction_4_1', sql.VARCHAR(10), satisfaction_4_1)
+    .input('importance_4_2', sql.VARCHAR(10), importance_4_2)
+    .input('satisfaction_4_2', sql.VARCHAR(10), satisfaction_4_2)
+    .input('importance_5_1', sql.VARCHAR(10), importance_5_1)
+    .input('satisfaction_5_1', sql.VARCHAR(10), satisfaction_5_1)
+    .input('importance_5_2', sql.VARCHAR(10), importance_5_2)
+    .input('satisfaction_5_2', sql.VARCHAR(10), satisfaction_5_2)
+    .input('importance_5_3', sql.VARCHAR(10), importance_5_3)
+    .input('satisfaction_5_3', sql.VARCHAR(10), satisfaction_5_3)
+    .input('importance_6_1', sql.VARCHAR(10), importance_6_1)
+    .input('satisfaction_6_1', sql.VARCHAR(10), satisfaction_6_1)
+    .input('importance_6_2', sql.VARCHAR(10), importance_6_2)
+    .input('satisfaction_6_2', sql.VARCHAR(10), satisfaction_6_2)
+    .input('sum_total', sql.VARCHAR(20), sum_total)
+    .input('criterion_result', sql.VARCHAR(10), criterion_result)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateVendorSatisfy', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+// End Vendor Satisfy
+
+
+// user
+app.get('/user', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = `SELECT a.*,b.group_name as group_name 
+    FROM db_user a
+    LEFT JOIN db_user_group b ON a.group_id = b.group_id
+    WHERE a.del = 0`;
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.get('/user/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "SELECT * FROM db_user WHERE id = '"+ id +"'";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
+app.post('/user', (req, res) => {
+  const { group_id, username, password, name, lastname, phone } = req.body;
+  const values = [ group_id, username, password, name, lastname, phone ];
+
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('group_id', sql.Int, group_id)
+    .input('username', sql.NVarChar(20), username)
+    .input('password', sql.NVarChar(MAX), password)
+    .input('name', sql.NVarChar(20), name)
+    .input('lastname', sql.NVarChar(20), lastname)
+    .input('phone', sql.NVarChar(10), phone)
+    .input('del', sql.Int, '0')
+    .output('message', sql.NVarChar(50))
+    .execute('AddUser', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      const message = returnValue.output.message;
+
+      if (returnValue.returnValue === 1) {
+        res.status(200).json({
+          success: false,
+          message: message,
+          data: values
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: 'Added successfully',
+          data: values
+        });
+      }
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.put('/user/:id', (req, res) => {
+  const id = req.params.id;
+  const { group_id, username, password, name, lastname, phone } = req.body;
+  const values = [ group_id, username, password, name, lastname, phone ];
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('group_id', sql.Int, group_id)
+    .input('username', sql.NVarChar(20), username)
+    .input('password', sql.NVarChar(MAX), password)
+    .input('name', sql.NVarChar(20), name)
+    .input('lastname', sql.NVarChar(20), lastname)
+    .input('phone', sql.NVarChar(10), phone)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateUser', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      if (returnValue.returnValue === 1) {
+        res.status(200).json({
+          success: false,
+          message: message,
+          data: values
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: 'Added successfully',
+          data: values
+        });
+      }
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.delete('/user/:id', (req, res) => {
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  const id = req.params.id;
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('del', sql.Int, '1')
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateUser', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+// end user
+
+// user group
+app.get('/userGroup', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = "SELECT * FROM db_user_group WHERE del = 0";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.get('/userGroup/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "SELECT * FROM db_user_group WHERE group_id = '"+ id +"'";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
+app.post('/userGroup', (req, res) => {
+  const { group_name } = req.body;
+  const values = [ group_name ];
+
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('group_name', sql.NVarChar(20), group_name)
+    .input('del', sql.Int, '0')
+    .output('message', sql.NVarChar(50))
+    .execute('AddUserGroup', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.put('/userGroup/:id', (req, res) => {
+  const id = req.params.id;
+  const { group_name } = req.body;
+  const values = [ group_name ];
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('group_name', sql.NVarChar(20), group_name)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateUserGroup', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.delete('/userGroup/:id', (req, res) => {
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  const id = req.params.id;
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('del', sql.Int, '1')
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateUserGroup', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+// end user group
+
+
+// login
+app.post('/login', (req, res) => {
+  const { username,password } = req.body;
+  const values = [ username,password ];
+
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('username', sql.NVarChar(20), username)
+    .input('password', sql.NVarChar(20), password)
+    .output('message', sql.NVarChar(50))
+    .output('userData', sql.NVarChar(50))
+    .execute('login', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      message = returnValue.output.message;
+      userData = returnValue.recordset[0];
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: userData
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+// end login
+
+
+// ****************************************************************************************************************** report
+app.get('/reportsEvaluation', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = `
+      SELECT a.company_id,b.genaralCompanyName,SUM((a.score_2_1 * 15) + (a.score_2_2 * 15) + (a.score_2_3 * 15) + (a.score_2_4 * 15) + (a.score_2_5 * 10) + (a.score_2_6 * 10)) AS total_score_sum
+      FROM db_vendor_evaluation a
+      LEFT JOIN db_vendor_register b ON a.company_id = b.id
+      GROUP BY a.company_id, b.genaralCompanyName
+    `;
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+// ****************************************************************************************************************** End report
+
+// ****************************************************************************************************************** news
+app.get('/newsWeb', (req, res) => {
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = "SELECT TOP(5) * FROM dbo.db_news WHERE del = 0";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.get('/news', (req, res) => {
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const query = "SELECT * FROM dbo.db_news WHERE del = 0 ORDER BY id DESC";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.get('/news/:id', (req, res) => {
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "SELECT * FROM dbo.db_news WHERE id = '"+id+"'";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
+app.post('/news', (req, res) => {
+  const { img_cover,subject,date_post,date_end,permission,detail,img } = req.body;
+  const values = [ img_cover,subject,date_post,date_end,permission,detail,img ];
+  const decodedData = Buffer.from(detail, 'base64').toString('utf-8');
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('img_cover', sql.NVarChar(255), img_cover)
+    .input('subject', sql.NVarChar(255), subject)
+    .input('date_post', sql.DateTime, date_post)
+    .input('date_end', sql.DateTime, date_end)
+    .input('permission', sql.NVarChar(255), permission)
+    .input('detail', sql.Text, decodedData)
+    .input('img', sql.NVarChar(255), img)
+    .output('message', sql.NVarChar(50))
+    .execute('AddNews', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+// ****************************************************************************************************************** End news
 app.listen(3003, () => {
   console.log('Server started on port 3003');
 });
