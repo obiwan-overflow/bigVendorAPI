@@ -55,9 +55,10 @@ app.get('/vendorRegister', (req, res) => {
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const pageNum = req.query.pageNum || 1;
-    const pageSize = req.query.pageSize || 10;
-    const query = `EXEC [dbo].[SelectVendorRegister] @PageNum = ${pageNum}, @PageSize = ${pageSize}`;
+    // const pageNum = req.query.pageNum || 1;
+    // const pageSize = req.query.pageSize || 10;
+    // const query = `EXEC [dbo].[SelectVendorRegister] @PageNum = ${pageNum}, @PageSize = ${pageSize}`;
+    const query = 'select * from dbo.db_vendor_register order by id desc';
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -179,8 +180,8 @@ app.post('/vendorRegister', (req, res) => {
       .input('safetyHoliday', sql.NVarChar(255), safetyHoliday)
       .input('date_add', sql.DateTime, new Date())
       .input('del', sql.Int, 0)
-      .input('file_catalog', sql.NText, genaralFileCatalog)
-      .input('file_profile_company', sql.NText, genaralFileProfileCompany)
+      .input('file_catalog', sql.NVarChar(255), genaralFileCatalog)
+      .input('file_profile_company', sql.NVarChar(255), genaralFileProfileCompany)
       .output('message', sql.NVarChar(50))
       .execute('AddVendorRegister', function(err, returnValue) {
         if (err){
@@ -271,8 +272,8 @@ app.put('/vendorRegister/:id', (req, res) => {
       .input('safetyHoliday', sql.NVarChar(255), safetyHoliday)
       .input('date_add', sql.DateTime, new Date())
       .input('del', sql.Int, 0)
-      .input('file_catalog', sql.NText, genaralFileCatalog)
-      .input('file_profile_company', sql.NText, genaralFileProfileCompany)
+      .input('file_catalog', sql.NVarChar(255), genaralFileCatalog)
+      .input('file_profile_company', sql.NVarChar(255), genaralFileProfileCompany)
       .output('message', sql.NVarChar(50))
       .execute('UpdateVendorRegister', function(err, returnValue) {
         if (err){
@@ -320,10 +321,10 @@ app.put('/vendorRegisterFile/:id', (req, res) => {
     pool.request()
       .input('id', sql.Int, id)
       .input('status', sql.Int, status)
-      .input('file_20', sql.Text, file_20)
-      .input('file_company_certificate', sql.Text, file_company_certificate)
-      .input('file_bookbank', sql.Text, file_bookbank)
-      .input('file_transfer', sql.Text, file_transfer)
+      .input('file_20', sql.NVarChar(255), file_20)
+      .input('file_company_certificate', sql.NVarChar(255), file_company_certificate)
+      .input('file_bookbank', sql.NVarChar(255), file_bookbank)
+      .input('file_transfer', sql.NVarChar(255), file_transfer)
       .output('message', sql.NVarChar(50))
       .execute('UpdateVendorRegister', function(err, returnValue) {
         if (err){
@@ -422,8 +423,8 @@ app.get('/vendorRegisterPerson/:id', (req, res) => {
 
 
 app.post('/vendorRegisterProducts', (req, res) => {
-  const {register_id, type, description, brand} = req.body;
-  const values = [register_id, type, description, brand];
+  const {register_id, type, description, brand, business_section, package, equipment_group, equipment_lists} = req.body;
+  const values = [register_id, type, description, brand, business_section, package, equipment_group, equipment_lists];
   let  pool =  sql.connect(config, err => {
     if (err) {
       console.log(err);
@@ -437,6 +438,10 @@ app.post('/vendorRegisterProducts', (req, res) => {
       .input('type', sql.NVarChar(255), type)
       .input('description', sql.NVarChar(MAX), description)
       .input('brand', sql.NVarChar(255), brand)
+      .input('business_section', sql.NVarChar(255), business_section)
+      .input('package', sql.NVarChar(255), package)
+      .input('equipment_group', sql.NVarChar(255), equipment_group)
+      .input('equipment_lists', sql.NVarChar(255), equipment_lists)
       .output('message', sql.NVarChar(50))
       .execute('AddVendorRegisterProducts', function(err, returnValue) {
         if (err){
@@ -657,53 +662,53 @@ app.post('/vendorRegisterEvaluate', (req, res) => {
       });
   }
 });
-app.post('/vendorRegisterProducts', (req, res) => {
-  const {register_id, type, description, brand} = req.body;
-  const values = [register_id, type, description, brand];
-  let  pool =  sql.connect(config, err => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send('Error connecting to database');
-    }
-  });
-  try {
-    let message = "";
-    pool.request()
-      .input('register_id', sql.Int, register_id)
-      .input('type', sql.NVarChar(255), type)
-      .input('description', sql.NVarChar(MAX), description)
-      .input('brand', sql.NVarChar(255), brand)
-      .output('message', sql.NVarChar(50))
-      .execute('AddVendorRegisterProducts', function(err, returnValue) {
-        if (err){
-          const errorResult = {
-            code: 'E0001',
-            message: err
-          };
-          res.status(500).json({
-            success: false,
-            error: errorResult
-          });
-        }
-        console.log(returnValue);
-        message = returnValue.output.message;
-        res.status(200).json({
-          success: true,
-          message: message,
-          data: values
-        });
-    });
-  } catch (error) {
-      const errorResult = {
-        code: 'E0001',
-        message: 'An error occurred while retrieving data'
-      };
-      res.status(500).json({
-        success: false,
-        error: errorResult
-      });
-  }
-});
+// app.post('/vendorRegisterProducts', (req, res) => {
+//   const {register_id, type, description, brand} = req.body;
+//   const values = [register_id, type, description, brand];
+//   let  pool =  sql.connect(config, err => {
+//     if (err) {
+//       console.log(err);
+//       return res.status(500).send('Error connecting to database');
+//     }
+//   });
+//   try {
+//     let message = "";
+//     pool.request()
+//       .input('register_id', sql.Int, register_id)
+//       .input('type', sql.NVarChar(255), type)
+//       .input('description', sql.NVarChar(MAX), description)
+//       .input('brand', sql.NVarChar(255), brand)
+//       .output('message', sql.NVarChar(50))
+//       .execute('AddVendorRegisterProducts', function(err, returnValue) {
+//         if (err){
+//           const errorResult = {
+//             code: 'E0001',
+//             message: err
+//           };
+//           res.status(500).json({
+//             success: false,
+//             error: errorResult
+//           });
+//         }
+//         console.log(returnValue);
+//         message = returnValue.output.message;
+//         res.status(200).json({
+//           success: true,
+//           message: message,
+//           data: values
+//         });
+//     });
+//   } catch (error) {
+//       const errorResult = {
+//         code: 'E0001',
+//         message: 'An error occurred while retrieving data'
+//       };
+//       res.status(500).json({
+//         success: false,
+//         error: errorResult
+//       });
+//   }
+// });
 
 
 // ****************************************************************************************************************** vendor form get service
@@ -1097,6 +1102,38 @@ app.post('/sendEmail', (req, res) => {
     }
   });
 });
+function sendMail(email,token,cat_id){
+  var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'support@fsoftpro.com',
+      pass: 'Fsps0lution'
+    }
+  });
+  if(cat_id == 1){
+    var mailOptions = {
+      from: 'support@fsoftpro.com',
+      to: email,
+      subject: 'form',
+      text: 'link from : http://localhost:4200/form/form-evaluation/'+token
+    };
+  }else if(cat_id == 2){
+    var mailOptions = {
+      from: 'support@fsoftpro.com',
+      to: email,
+      subject: 'form',
+      text: 'link from : http://localhost:4200/form/form-satisfy/'+token
+    };
+  }
+  
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+}
 // ****************************************************************************************************************** End send email
 
 
@@ -2012,7 +2049,7 @@ app.get('/newsWeb', (req, res) => {
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const query = "SELECT TOP(5) * FROM dbo.db_news WHERE del = 0";
+    const query = "SELECT TOP(5) * FROM dbo.db_news WHERE del = 0 AND GETDATE() BETWEEN date_post AND date_end ORDER BY id DESC";
     sql.query(query, (err, result) => {
       if (err) {
         console.log(err);
@@ -2074,7 +2111,7 @@ app.post('/news', (req, res) => {
     .input('date_post', sql.DateTime, date_post)
     .input('date_end', sql.DateTime, date_end)
     .input('permission', sql.NVarChar(255), permission)
-    .input('detail', sql.Text, decodedData)
+    .input('detail', sql.NVarChar(MAX), decodedData)
     .input('img', sql.NVarChar(255), img)
     .output('message', sql.NVarChar(50))
     .execute('AddNews', function(err, returnValue) {
@@ -2107,7 +2144,248 @@ app.post('/news', (req, res) => {
       });
   }
 });
+app.put('/news/:id', (req, res) => {
+  const { img_cover,subject,date_post,date_end,permission,detail,img } = req.body;
+  const values = [ img_cover,subject,date_post,date_end,permission,detail,img ];
+  const decodedData = Buffer.from(detail, 'base64').toString('utf-8');
+  const id = req.params.id;
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.NVarChar(255), id)
+    .input('img_cover', sql.NVarChar(255), img_cover)
+    .input('subject', sql.NVarChar(255), subject)
+    .input('date_post', sql.DateTime, date_post)
+    .input('date_end', sql.DateTime, date_end)
+    .input('permission', sql.NVarChar(255), permission)
+    .input('detail', sql.NVarChar(MAX), decodedData)
+    .input('img', sql.NVarChar(255), img)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateNews', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.delete('/news/:id', (req, res) => {
+  const id = req.params.id;
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.NVarChar(255), id)
+    .input('del', sql.Int, 1)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateNews', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
 // ****************************************************************************************************************** End news
+
+
+// ****************************************************************************************************************** Genarate token
+app.get('/checkToken/:token', (req, res) => {
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const token = encodeURIComponent(req.params.token);
+    const query = "SELECT * FROM dbo.db_from_token WHERE token = '"+ token +"'";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset[0]);
+    });
+  });
+});
+app.get('/tokenLists/:cat_id', (req, res) => {
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const cat_id = req.params.cat_id;
+    const query = "SELECT a.*,b.id as company_id,b.genaralCompanyName as company_name FROM dbo.db_from_token a LEFT JOIN db_vendor_register b ON a.vendor_id = b.id WHERE a.del = 0 AND a.cat_id = '"+cat_id+"'";
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.send(result.recordset);
+    });
+  });
+});
+app.post('/genarateTokenEvaluation', (req, res) => {
+  const { vendor_id,email,position,cat_id } = req.body;
+  const values = [ vendor_id,email,position,cat_id ];
+
+  const timestamp = Date.now();
+  const randomNum = Math.floor(Math.random() * 1000);
+  const encodedData = Buffer.from(timestamp+'|'+randomNum).toString('base64');
+  const uid = encodeURIComponent(encodedData);
+  // const encodedData = 'your_encoded_base64_data_here';
+  // const decodedBuffer = Buffer.from(encodedData, 'base64');
+  // const decodedString = decodedBuffer.toString('utf-8');
+  // const [vendor_id, email] = decodedString.split('|');
+
+  // console.log('Vendor ID:', vendor_id);
+  // console.log('Email:', email);
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('cat_id', sql.Int, cat_id)
+    .input('vendor_id', sql.Int, vendor_id)
+    .input('email', sql.NVarChar(255), email)
+    .input('token', sql.NVarChar(MAX), uid)
+    .input('position', sql.Int, position)
+    .output('message', sql.NVarChar(50))
+    .execute('AddTokenForm', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+      // send mail link form
+      sendMail(email,uid,cat_id);
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.delete('/genarateTokenEvaluation/:id', (req, res) => {
+  const id = req.params.id;
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.NVarChar(255), id)
+    .input('del', sql.Int, 1)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateTokenForm', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+// ****************************************************************************************************************** End Genarate token
 app.listen(3500, () => {
   console.log('Server started on port 3500');
 });
