@@ -33,20 +33,37 @@ app.get('/vendorUser/:id', (req, res) => {
   });
 });
 app.get('/vendorRegister/:id', (req, res) => {
-  const userId = req.params.id;
-  const request = new sql.Request();
-  request.input('PageNum', sql.Int, 1);
-  request.input('PageSize', sql.Int, 10);
-  request.input('id', sql.NVarChar(sql.MAX), userId);
-  request.execute('SelectVendorRegister', (err, result) => {
+  // const userId = req.params.id;
+  // const request = new sql.Request();
+  // request.input('PageNum', sql.Int, 1);
+  // request.input('PageSize', sql.Int, 10);
+  // request.input('id', sql.NVarChar(sql.MAX), userId);
+  // request.execute('SelectVendorRegister', (err, result) => {
+  //   if (err) {
+  //     console.log(err);
+  //     return res.status(500).send('Error executing stored procedure');
+  //   }
+  //   if (result.recordset.length === 0) {
+  //     return res.status(404).send('Register not found');
+  //   }
+  //   res.send(result.recordset[0]);
+  // });
+  sql.connect(config, err => {
     if (err) {
       console.log(err);
-      return res.status(500).send('Error executing stored procedure');
+      return res.status(500).send('Error connecting to database');
     }
-    if (result.recordset.length === 0) {
-      return res.status(404).send('Register not found');
-    }
-    res.send(result.recordset[0]);
+    const id = req.params.id;
+    const query = 'select * from dbo.db_vendor_register where id = '+id+'';
+    sql.query(query, (err, result) => {
+      console.log(result);
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+
+      res.send(result.recordset[0]);
+    });
   });
 });
 app.get('/vendorRegister', (req, res) => {
@@ -58,7 +75,7 @@ app.get('/vendorRegister', (req, res) => {
     // const pageNum = req.query.pageNum || 1;
     // const pageSize = req.query.pageSize || 10;
     // const query = `EXEC [dbo].[SelectVendorRegister] @PageNum = ${pageNum}, @PageSize = ${pageSize}`;
-    const query = 'select * from dbo.db_vendor_register order by id desc';
+    const query = 'select * from dbo.db_vendor_register where del = 0 order by id desc';
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -89,13 +106,38 @@ app.get('/vendorRegisterStatus/:status', (req, res) => {
   });
 });
 
-app.get('/vendorRegisterEquipment', (req, res) =>{
+app.post('/vendorRegisterEquipment', (req, res) =>{
   sql.connect(config, err => {
     if (err) {
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const query = 'SELECT * FROM db_vendor_register WHERE status = 3 AND generalCompanyTypeBusiness = 1 OR generalCompanyTypeBusiness = 3';
+    const pBusiness = req.body.pBusiness;
+    const pPackage = req.body.pPackage;
+    const pEquipment_group = req.body.pEquipment_group;
+    const pEquipment_lists = req.body.pEquipment_lists;
+
+    let where = '';
+    if (pBusiness) {
+      where += "AND b.business_section = '" + pBusiness + "' ";
+    }
+    if (pPackage) {
+      where += "AND b.package = '" + pPackage + "' ";
+    }
+    if (pEquipment_group) {
+      where += "AND b.equipment_group = '" + pEquipment_group + "' ";
+    }
+    if (pEquipment_lists) {
+      where += "AND b.equipment_lists = '" + pEquipment_lists + "' ";
+    }
+
+    const query = `
+      SELECT * 
+      FROM dbo.db_vendor_register a 
+      LEFT JOIN dbo.db_vendor_register_products b ON a.id = b.register_id 
+      WHERE del = 0 AND status = 3 ${where} AND generalCompanyTypeBusiness = 1 OR generalCompanyTypeBusiness = 3
+    `;
+    // const query = 'SELECT * FROM db_vendor_register WHERE del = 0 AND status = 3 AND generalCompanyTypeBusiness = 1 OR generalCompanyTypeBusiness = 3';
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -106,13 +148,36 @@ app.get('/vendorRegisterEquipment', (req, res) =>{
     });
   });
 });
-app.get('/vendorRegisterService', (req, res) =>{
+app.post('/vendorRegisterService', (req, res) =>{
   sql.connect(config, err => {
     if (err) {
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const query = 'SELECT * FROM db_vendor_register WHERE status = 3 AND generalCompanyTypeBusiness = 2 OR generalCompanyTypeBusiness = 3';
+    const sCat = req.body.sCat;
+    const sSubcat = req.body.sSubcat;
+    const sService = req.body.sService;
+
+
+    let where = '';
+    if (sCat) {
+      where += "AND b.cat_id = '" + sCat + "' ";
+    }
+    if (sSubcat) {
+      where += "AND b.subcat_id = '" + sSubcat + "' ";
+    }
+    if (sService) {
+      where += "AND b.service_id = '" + sService + "' ";
+    }
+
+
+    const query = `
+      SELECT * 
+      FROM dbo.db_vendor_register a 
+      LEFT JOIN dbo.db_vendor_register_services b ON a.id = b.register_id 
+      WHERE del = 0 AND status = 3 ${where} AND generalCompanyTypeBusiness = 2 OR generalCompanyTypeBusiness = 3
+    `;
+    // const query = 'SELECT * FROM db_vendor_register WHERE del = 0 AND status = 3 AND generalCompanyTypeBusiness = 2 OR generalCompanyTypeBusiness = 3';
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -120,6 +185,23 @@ app.get('/vendorRegisterService', (req, res) =>{
         return res.status(500).send('Error executing query');
       }
       res.send(result.recordset);
+    });
+  });
+});
+app.delete('/vendorRegister/:id', (req, res) =>{
+  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+    const id = req.params.id;
+    const query = "UPDATE db_vendor_register SET del = 1 WHERE id = '" + id + "'";
+    sql.query(query, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error executing query');
+      }
+      res.json({ message: 'Update successful' });
     });
   });
 });
@@ -1144,7 +1226,7 @@ app.get('/vendorEvaluation', (req, res) =>{
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const query = "SELECT a.*,b.genaralCompanyName as genaralCompanyName FROM db_vendor_evaluation a LEFT JOIN db_vendor_register b ON a.company_id = b.id ORDER BY a.id DESC";
+    const query = "SELECT a.*,b.genaralCompanyName as genaralCompanyName FROM db_vendor_evaluation a LEFT JOIN db_vendor_register b ON a.company_id = b.id WHERE a.del = 0 ORDER BY a.id DESC";
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -1173,23 +1255,66 @@ app.get('/vendorEvaluation/:id', (req, res) =>{
     });
   });
 });
-app.delete('/vendorEvaluation/:id', (req, res) =>{
-  sql.connect(config, err => {
+// app.delete('/vendorEvaluation/:id', (req, res) =>{
+//   sql.connect(config, err => {
+//     if (err) {
+//       console.log(err);
+//       return res.status(500).send('Error connecting to database');
+//     }
+//     const id = req.params.id;
+//     const query = "DELETE FROM db_vendor_evaluation WHERE id = '" + id + "'";
+//     sql.query(query, (err, result) => {
+//       console.log(result);
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).send('Error executing query');
+//       }
+//       res.send(result.recordset);
+//     });
+//   });
+// });
+app.delete('/vendorEvaluation/:id', (req, res) => {
+  let  pool =  sql.connect(config, err => {
     if (err) {
       console.log(err);
       return res.status(500).send('Error connecting to database');
     }
-    const id = req.params.id;
-    const query = "DELETE FROM db_vendor_evaluation WHERE id = '" + id + "'";
-    sql.query(query, (err, result) => {
-      console.log(result);
-      if (err) {
-        console.log(err);
-        return res.status(500).send('Error executing query');
-      }
-      res.send(result.recordset);
-    });
   });
+  const id = req.params.id;
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('del', sql.Int, 1)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateVendorEvaluation', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
 });
 app.post('/vendorEvaluation', (req, res) => {
   const { company_id,vendor_code,group_score,group_users,group_users_other,purchase_of_year,purchase_order_of_year,question2_1,question2_1_desc,score_2_1,desc_2_1,question2_2,question2_2_desc,score_2_2,desc_2_2,score_2_3,desc_2_3,score_2_4,desc_2_4,score_2_5,desc_2_5,score_2_6,score_2_7,score_2_8,desc_2_6,total_score_2,po_number,score_3_1,score_3_2,score_3_3,comment,return_order,user_name,user_name_date,purchasing_officer,purchasing_officer_date,agree_to_proceed,agree_to_proceed_date,assessor } = req.body;
@@ -1236,11 +1361,11 @@ app.post('/vendorEvaluation', (req, res) => {
     .input('score_3_3', sql.Int, score_3_3)
     .input('comment', sql.NVarChar(255), comment)
     .input('return_order', sql.Int, return_order)
-    .input('user_name', sql.NVarChar(20), user_name)
+    .input('user_name', sql.NVarChar(100), user_name)
     .input('user_name_date', sql.DateTime, user_name_date)
-    .input('purchasing_officer', sql.NVarChar(20), purchasing_officer)
+    .input('purchasing_officer', sql.NVarChar(100), purchasing_officer)
     .input('purchasing_officer_date', sql.DateTime, purchasing_officer_date)
-    .input('agree_to_proceed', sql.NVarChar(20), agree_to_proceed)
+    .input('agree_to_proceed', sql.NVarChar(100), agree_to_proceed)
     .input('agree_to_proceed_date', sql.DateTime, agree_to_proceed_date)
     .input('assessor', sql.Int, assessor)
     .output('message', sql.NVarChar(50))
@@ -1319,11 +1444,11 @@ app.put('/vendorEvaluation/:id', (req, res) => {
     .input('score_3_3', sql.Int, score_3_3)
     .input('comment', sql.NVarChar(255), comment)
     .input('return_order', sql.Int, return_order)
-    .input('user_name', sql.NVarChar(20), user_name)
+    .input('user_name', sql.NVarChar(100), user_name)
     .input('user_name_date', sql.DateTime, user_name_date)
-    .input('purchasing_officer', sql.NVarChar(20), purchasing_officer)
+    .input('purchasing_officer', sql.NVarChar(100), purchasing_officer)
     .input('purchasing_officer_date', sql.DateTime, purchasing_officer_date)
-    .input('agree_to_proceed', sql.NVarChar(20), agree_to_proceed)
+    .input('agree_to_proceed', sql.NVarChar(100), agree_to_proceed)
     .input('agree_to_proceed_date', sql.DateTime, agree_to_proceed_date)
     .input('assessor', sql.Int, assessor)
     .output('message', sql.NVarChar(50))
@@ -2251,7 +2376,7 @@ app.get('/checkToken/:token', (req, res) => {
       return res.status(500).send('Error connecting to database');
     }
     const token = encodeURIComponent(req.params.token);
-    const query = "SELECT * FROM dbo.db_from_token WHERE token = '"+ token +"'";
+    const query = "SELECT * FROM dbo.db_token_detail WHERE token = '"+ token +"'";
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -2269,7 +2394,7 @@ app.get('/tokenLists/:cat_id', (req, res) => {
       return res.status(500).send('Error connecting to database');
     }
     const cat_id = req.params.cat_id;
-    const query = "SELECT a.*,b.id as company_id,b.genaralCompanyName as company_name FROM dbo.db_from_token a LEFT JOIN db_vendor_register b ON a.vendor_id = b.id WHERE a.del = 0 AND a.cat_id = '"+cat_id+"'";
+    const query = "SELECT a.*,b.id as company_id,b.genaralCompanyName as company_name FROM dbo.db_token_detail a LEFT JOIN db_vendor_register b ON a.vendor_id = b.id WHERE a.del = 0 AND a.cat_id = '"+cat_id+"'";
     sql.query(query, (err, result) => {
       console.log(result);
       if (err) {
@@ -2280,9 +2405,55 @@ app.get('/tokenLists/:cat_id', (req, res) => {
     });
   });
 });
-app.post('/genarateTokenEvaluation', (req, res) => {
-  const { vendor_id,email,position,cat_id } = req.body;
-  const values = [ vendor_id,email,position,cat_id ];
+app.post('/genarateToken', (req, res) => {
+  const { vendor_id,cat_id } = req.body;
+  const values = [ vendor_id,cat_id ];
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('vendor_id', sql.Int, vendor_id)
+    .input('cat_id', sql.Int, cat_id)
+    .output('message', sql.NVarChar(50))
+    .execute('AddToken', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values,
+        id: returnValue.returnValue
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.post('/genarateTokenDetail', (req, res) => {
+  const { vendor_id,email,position,cat_id,status,token_id } = req.body;
+  const values = [ vendor_id,email,position,cat_id,status,token_id ];
 
   const timestamp = Date.now();
   const randomNum = Math.floor(Math.random() * 1000);
@@ -2304,13 +2475,15 @@ app.post('/genarateTokenEvaluation', (req, res) => {
   try {
     let message = "";
     pool.request()
-    .input('cat_id', sql.Int, cat_id)
     .input('vendor_id', sql.Int, vendor_id)
+    .input('cat_id', sql.Int, cat_id)
+    .input('position', sql.Int, position)
+    .input('status', sql.Int, status)
+    .input('token_id', sql.Int, token_id)
     .input('email', sql.NVarChar(255), email)
     .input('token', sql.NVarChar(MAX), uid)
-    .input('position', sql.Int, position)
     .output('message', sql.NVarChar(50))
-    .execute('AddTokenForm', function(err, returnValue) {
+    .execute('AddTokenDetail', function(err, returnValue) {
       if (err){
         const errorResult = {
           code: 'E0001',
@@ -2342,7 +2515,58 @@ app.post('/genarateTokenEvaluation', (req, res) => {
       });
   }
 });
-app.delete('/genarateTokenEvaluation/:id', (req, res) => {
+app.put('/genarateTokenDetail/:id', (req, res) => {
+  const { vendor_id,email,position,cat_id,status,token_id } = req.body;
+  const values = [ vendor_id,email,position,cat_id,status,token_id ];
+  const id = req.params.id;
+  let  pool =  sql.connect(config, err => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send('Error connecting to database');
+    }
+  });
+  try {
+    let message = "";
+    pool.request()
+    .input('id', sql.Int, id)
+    .input('vendor_id', sql.Int, vendor_id)
+    .input('cat_id', sql.Int, cat_id)
+    .input('position', sql.Int, position)
+    .input('status', sql.Int, status)
+    .input('token_id', sql.Int, token_id)
+    .input('email', sql.NVarChar(255), email)
+    .output('message', sql.NVarChar(50))
+    .execute('UpdateTokenDetail', function(err, returnValue) {
+      if (err){
+        const errorResult = {
+          code: 'E0001',
+          message: err
+        };
+        res.status(500).json({
+          success: false,
+          error: errorResult
+        });
+      }
+      console.log(returnValue);
+      message = returnValue.output.message;
+      res.status(200).json({
+        success: true,
+        message: message,
+        data: values
+      });
+    });
+  } catch (error) {
+      const errorResult = {
+        code: 'E0001',
+        message: 'An error occurred while retrieving data'
+      };
+      res.status(500).json({
+        success: false,
+        error: errorResult
+      });
+  }
+});
+app.delete('/genarateTokenDetail/:id', (req, res) => {
   const id = req.params.id;
   let  pool =  sql.connect(config, err => {
     if (err) {
@@ -2356,7 +2580,7 @@ app.delete('/genarateTokenEvaluation/:id', (req, res) => {
     .input('id', sql.NVarChar(255), id)
     .input('del', sql.Int, 1)
     .output('message', sql.NVarChar(50))
-    .execute('UpdateTokenForm', function(err, returnValue) {
+    .execute('UpdateTokenDetail', function(err, returnValue) {
       if (err){
         const errorResult = {
           code: 'E0001',
