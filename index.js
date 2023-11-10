@@ -3397,7 +3397,7 @@ app.post('/insert-data', (req, res) => {
       });
     }
 
-    res.status(200).send('ข้อมูลถูก insert สำเร็จ');
+    res.status(200).send('ข้อมูลถูก insert สำเร็จ.');
     sql.close();
   });
 });
