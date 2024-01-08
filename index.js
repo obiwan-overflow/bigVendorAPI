@@ -1,5 +1,5 @@
 const express = require('express');
-const { connect, sql,config } = require('./db');
+const { connect, sql,config,corsOptions } = require('./db');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +8,11 @@ const app = express();
 const bodyParser = require("body-parser");
 const { MAX } = require('mssql');
 connect();
-app.use(cors());
+if(corsOptions.origin){
+  app.use(cors(corsOptions));
+}else{
+  app.use(cors());
+}
 app.use(bodyParser.urlencoded({
   extended:true,
   limit: '10mb',

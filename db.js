@@ -20,4 +20,10 @@ async function connect() {
   }
 }
 
-module.exports = { connect, sql,config };
+// setting CORS 
+const corsOptions = {
+  origin: process.env.domain,
+  optionsSuccessStatus: 200,
+};
+
+module.exports = { connect, sql,config,corsOptions };
